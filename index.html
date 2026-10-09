@@ -1,0 +1,772 @@
+Here is the complete, production-ready `index.html` file updated with the **SYNCRA** branding.
+
+All the integrated capabilities—the interactive Gantt scheduling, multi-AC buyout tracking, category-based supplier recommendations, SmartSheet-style drag-and-drop attachments, CSV importer, universal search, and QC/NCR generation—are updated under the **SYNCRA** identity.
+
+### Updated Code (`index.html`)
+
+Save this directly to your `index.html` file on GitHub Pages:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNCRA - Unified Operations, Gantt & Buyout Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .drag-over { border-color: #f59e0b !important; background-color: rgba(245, 158, 11, 0.15) !important; }
+    @media print {
+      body { background: white !important; color: black !important; }
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen pb-12">
+
+  <!-- Main Navigation Header -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-xl no-print">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-black px-2.5 py-0.5 rounded text-xs tracking-widest shadow">SYNCRA</span>
+          <h1 class="text-lg font-bold text-slate-100 tracking-tight">INDUSTRIAL OPERATIONS & BUYOUT HUB</h1>
+        </div>
+        <p class="text-xs text-slate-400">Integrated Scheduling, Shop Floor RAG, Category Supplier Engine & QC NCR Portal</p>
+      </div>
+
+      <!-- Navigation & Mode Controls -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="bg-slate-950 border border-slate-800 p-1 rounded-xl flex items-center gap-1">
+          <button onclick="switchViewSection('buyout')" id="nav-buyout" class="px-3 py-1.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg transition-all shadow">
+            📦 Buyout & Procurement
+          </button>
+          <button onclick="switchViewSection('gantt')" id="nav-gantt" class="px-3 py-1.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-lg hover:bg-slate-700 transition-all">
+            📊 Interactive Gantt
+          </button>
+          <button onclick="switchViewSection('suppliers')" id="nav-suppliers" class="px-3 py-1.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-lg hover:bg-slate-700 transition-all">
+            📇 Supplier Portal
+          </button>
+        </div>
+
+        <button onclick="openPmReportModal()" class="px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-lg shadow">
+          📊 Daily Report
+        </button>
+
+        <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-1">
+          <span class="text-[10px] font-bold text-slate-400 px-1.5">MODE:</span>
+          <select id="roleSelect" onchange="changeViewMode(this.value)" class="bg-slate-900 text-amber-400 font-bold text-xs rounded px-2 py-1 outline-none border-none">
+            <option value="internal">🔒 Internal Mode</option>
+            <option value="client">🌐 Client Portal View</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- SECTION 1: BUYOUT & PROCUREMENT TRACKER -->
+    <section id="section-buyout" class="space-y-6">
+      
+      <!-- Search & Filter Controls -->
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-3 shadow-xl no-print">
+        <div class="md:col-span-2">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Universal Search (AC#, Project, Supplier, PO#):</label>
+          <input type="text" id="searchInput" onkeyup="applyBuyoutFilters()" placeholder="Type to search anything across all projects..." 
+                 class="w-full bg-slate-950 border border-slate-700 text-amber-400 font-medium rounded-xl px-3.5 py-2 text-xs outline-none focus:border-amber-500 font-mono">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filter Status:</label>
+          <select id="statusFilter" onchange="applyBuyoutFilters()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-3 py-2 text-xs outline-none">
+            <option value="ALL">All Lines</option>
+            <option value="COMPLETED_PROJECTS">✓ Completed Purchases (100% Recd)</option>
+            <option value="QUOTE">🟡 Waiting for Quote (WFQ)</option>
+            <option value="ISSUED">🟠 PO Issued</option>
+            <option value="RECEIVED">🟢 Received in Stores</option>
+            <option value="NO_ACTION">⚪ No Action / Blank (White)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Actions & CSV Import:</label>
+          <div class="flex gap-2">
+            <label class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl cursor-pointer text-center shadow">
+              📂 Import CSV
+              <input type="file" id="csvInput" accept=".csv" onchange="handleCsvUpload(event)" class="hidden">
+            </label>
+            <button onclick="openBatchPoModal()" class="flex-1 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow">
+              + Batch PO
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buyout Project Cards Container -->
+      <div id="buyoutCardsContainer" class="space-y-6"></div>
+    </section>
+
+    <!-- SECTION 2: INTERACTIVE GANTT & SHOP FLOOR SCHEDULER -->
+    <section id="section-gantt" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl relative">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">JOB #AC2969</span>
+              <span class="text-xs text-slate-400">Client: MONGBWALU MIL26.006</span>
+            </div>
+            <h2 class="text-2xl font-black text-slate-100 mt-1">FEED CHUTE & SUBCONTRACTED CONE ASSEMBLY</h2>
+          </div>
+
+          <div id="overallCountdownBanner" class="bg-slate-800 border border-slate-700 p-3.5 rounded-xl flex items-center gap-4">
+            <div class="text-right">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Target Delivery</span>
+              <span class="text-2xl font-black font-mono text-amber-400">14 DAYS REMAINING</span>
+            </div>
+            <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-3" id="ganttStageRows"></div>
+      </div>
+
+      <!-- Departmental Streams -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800 mb-4">
+          <button onclick="switchStreamTab('status')" id="tab-status" class="px-4 py-2 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg">⚙ Project Status</button>
+          <button onclick="switchStreamTab('buying')" id="tab-buying" class="px-4 py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-lg">🛒 Buying & Logistics</button>
+          <button onclick="switchStreamTab('stores')" id="tab-stores" class="px-4 py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-lg">📦 Stores Section</button>
+          <button onclick="switchStreamTab('client')" id="tab-client" class="px-4 py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-lg">📋 Client Notices</button>
+        </div>
+        <div id="feedStreamContainer" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: STANDALONE SUPPLIER DIRECTORY PORTAL -->
+    <section id="section-suppliers" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row gap-3 shadow-xl">
+        <div class="flex-1">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Search Master Supplier Directory:</label>
+          <input type="text" id="supplierSearchInput" onkeyup="renderSupplierDirectory()" placeholder="Search supplier name, service category, or contact person..." 
+                 class="w-full bg-slate-950 border border-slate-700 text-amber-400 font-medium rounded-xl px-3.5 py-2 text-xs outline-none focus:border-amber-500 font-mono">
+        </div>
+        <div class="w-full md:w-64">
+          <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Filter Status:</label>
+          <select id="supplierStatusFilter" onchange="renderSupplierDirectory()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-3 py-2 text-xs outline-none">
+            <option value="ALL">All Statuses</option>
+            <option value="APPROVED">APPROVED (NDA Active)</option>
+            <option value="PREFERRED">PREFERRED Only</option>
+            <option value="NO STATUS">NO STATUS / UNVERIFIED</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="supplierDirectoryContainer" class="space-y-6"></div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: SMARTSHEET ATTACHMENTS -->
+  <div id="attachmentModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-amber-400">📎 Attach Line PO Documents</h3>
+        <button onclick="closeAttachmentModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+
+      <div id="dropZone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)" 
+           class="border-2 border-dashed border-slate-700 bg-slate-950 p-6 rounded-xl text-center space-y-2 transition-all">
+        <span class="text-3xl block">📄</span>
+        <p class="text-xs font-bold text-slate-300">Drag & Drop PO or Delivery Note here</p>
+        <label class="inline-block px-3 py-1.5 bg-slate-800 text-amber-400 font-bold text-xs rounded-lg cursor-pointer border border-slate-700 mt-2">
+          Browse Files
+          <input type="file" id="modalFileInput" onchange="handleFileInput(event)" class="hidden">
+        </label>
+      </div>
+
+      <div class="space-y-2 border-t border-slate-800 pt-3">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Attached Line Files:</label>
+        <div id="attachedFilesList" class="space-y-2 max-h-40 overflow-y-auto"></div>
+      </div>
+
+      <button onclick="closeAttachmentModal()" class="w-full py-2 bg-slate-800 text-slate-200 font-bold text-xs rounded-xl">Close</button>
+    </div>
+  </div>
+
+  <!-- MODAL 2: QC INSPECTION & NCR GENERATOR -->
+  <div id="qcModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-xl space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-lg font-bold text-blue-400">🔍 QC Inspection & Supplier Rejection</h3>
+          <p class="text-xs text-slate-400" id="qcStageTitle">Stage Inspection</p>
+        </div>
+        <button onclick="closeQcModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div id="qcSupplierBanner" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-xs"></div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 mb-2">VERDICT:</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="setQcVerdict('APPROVE')" id="verdict-approve" class="py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl">✓ Approve</button>
+          <button type="button" onclick="setQcVerdict('SNAG')" id="verdict-snag" class="py-2 bg-amber-600/30 text-amber-300 font-bold text-xs rounded-xl">⚠ Snag List</button>
+          <button type="button" onclick="setQcVerdict('REJECT')" id="verdict-reject" class="py-2 bg-slate-800 text-slate-300 font-bold text-xs rounded-xl">✕ Reject (NCR)</button>
+        </div>
+      </div>
+
+      <div id="snagSection" class="space-y-3 pt-2 border-t border-slate-800">
+        <label class="text-xs font-bold text-amber-400">DEFECT DETAILS & PHOTO ATTACHMENT:</label>
+        <textarea id="qcDefectText" class="w-full bg-slate-800 border border-slate-700 text-xs text-white p-2.5 rounded-xl outline-none" rows="3" placeholder="Describe defect (e.g. UT scan failed on seam weld)..."></textarea>
+        <input type="file" accept="image/*" capture="environment" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-slate-800 file:text-slate-200">
+      </div>
+
+      <button onclick="submitQcInspection()" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow">
+        Submit & Process Rejection
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 3: PRINTABLE NCR TEMPLATE -->
+  <div id="ncrModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-2xl space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3 no-print">
+        <h3 class="text-lg font-bold text-red-500">🚨 NON-CONFORMANCE REPORT (NCR)</h3>
+        <button onclick="closeNcrModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div id="ncrPrintArea" class="bg-white text-black p-6 rounded-xl space-y-4 text-xs font-sans"></div>
+
+      <div class="flex gap-2 pt-2 no-print">
+        <button onclick="window.print()" class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl shadow">
+          🖨 Print / Save NCR PDF
+        </button>
+        <button onclick="closeNcrModal()" class="px-4 py-2.5 bg-slate-800 text-slate-200 font-bold text-xs rounded-xl">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: BATCH PO ASSIGNMENT -->
+  <div id="batchPoModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-base font-bold text-amber-400">Issue Batch PO across Multiple Items</h3>
+        <button onclick="closeBatchPoModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">SELECT SUPPLIER:</label>
+          <select id="batchSupplierSelect" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 outline-none font-bold">
+            <option value="CUSTOM SEAL">CUSTOM SEAL (John)</option>
+            <option value="PARM GARAY">PARM GARAY (Albert)</option>
+            <option value="STEELCORP">STEELCORP (Michael)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">ENTER PO NUMBER:</label>
+          <input type="text" id="batchPoInput" value="PO18602" class="w-full bg-slate-800 border border-slate-700 text-white font-mono rounded-lg p-2.5 outline-none font-bold">
+        </div>
+      </div>
+
+      <button onclick="saveBatchPoAssignment()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow">
+        Apply Single PO to Project Items
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 5: DAILY EXECUTIVE PM REPORT -->
+  <div id="pmReportModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-2xl space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-indigo-400">📊 SYNCRA Executive Status Report</h3>
+        <button onclick="closePmReportModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="bg-slate-800 p-4 rounded-xl space-y-3 border border-slate-700 text-xs">
+        <h4 class="font-bold text-amber-400">STATUS SUMMARY: 180 ACTIVE PROJECTS</h4>
+        <div class="grid grid-cols-3 gap-2 text-center font-bold">
+          <div class="bg-emerald-950 border border-emerald-800 p-2 rounded text-emerald-400"><span class="block text-lg">142</span> ON TRACK</div>
+          <div class="bg-amber-950 border border-amber-800 p-2 rounded text-amber-400"><span class="block text-lg">26</span> AT RISK</div>
+          <div class="bg-red-950 border border-red-800 p-2 rounded text-red-400"><span class="block text-lg">12</span> OVERDUE</div>
+        </div>
+      </div>
+
+      <button onclick="closePmReportModal()" class="w-full py-2.5 bg-slate-800 text-slate-200 font-bold text-xs rounded-xl">Close</button>
+    </div>
+  </div>
+
+<script>
+  // Master Supplier Directory Database
+  const masterSupplierDirectory = [
+    { name: "Buyela Engineering", category: "MACHINING", status: "APPROVED", pocName: "Deon", pocEmail: "deon@buyelaengineering.co.za", pocPhone: "082 0620 2772", services: "Machining" },
+    { name: "Dabaresa", category: "MACHINING", status: "APPROVED", pocName: "Jeandre", pocEmail: "sales@dabaresa.net", pocPhone: "082 302 8848", services: "Machining (smaller items)" },
+    { name: "Fast Flame", category: "CUT TO SIZE", status: "APPROVED", pocName: "Heinz", pocEmail: "heinz@fastflame.co.za", pocPhone: "011 433 2652", services: "Laser and profile cutting" },
+    { name: "Genesis steel", category: "PLATES", status: "PREFERRED", pocName: "Annelize", pocEmail: "sales@genesissteel.co.za", pocPhone: "011 817 4008", services: "Plates & Structural" },
+    { name: "Custom seals", category: "SEALS & GASKETS", status: "PREFERRED", pocName: "John", pocEmail: "john@customseals.co.za", pocPhone: "011 674 1093", services: "Butyl, Nitrile & Felt Seals" }
+  ];
+
+  // Master Project Buyout Database
+  let masterDatabase = [
+    {
+      id: "P1",
+      projectName: "MONGBWALU MIL26.006 - FEED CHUTE & ACCESSORIES",
+      buyer: "NORMAN",
+      acLabels: "AC2969",
+      items: [
+        { id: 101, item: "PLATE MATERIAL - SHELL", category: "PLATES", supplier: "Genesis steel", contact: "ANNELIZE", po: "WFA", datePo: "", recd: "", dateRecd: "", followUp: "", status: "QUOTE", nextcloudUrl: "https://cloud.company.co.za/s/WFA", attachments: [] },
+        { id: 102, item: "MACHINING ON WHEEL SHAFTS", category: "MACHINING", supplier: "Dabaresa", contact: "Jeandre", po: "PO18893", datePo: "6-Oct-26", recd: "NO", dateRecd: "", followUp: "02-10-2026", status: "ISSUED", nextcloudUrl: "https://cloud.company.co.za/s/PO18893", attachments: [] },
+        { id: 103, item: "RUBBER & FELT SEALS", category: "SEALS & GASKETS", supplier: "Custom seals", contact: "JOHN", po: "PO18602", datePo: "14-Sep-26", recd: "YES", dateRecd: "14-Sep-26", followUp: "RIF", status: "RECEIVED", nextcloudUrl: "", attachments: [] }
+      ]
+    },
+    {
+      id: "P2",
+      projectName: "MARMATO SM & BM SPA26.363 - FELT SEALS",
+      buyer: "NORMAN",
+      acLabels: "AC3005 (GGG SM), AC3006 (PINION SM), AC3007 (GGG BM), AC3008 (PINION SM)",
+      items: [
+        { id: 201, item: "GGG SM FELT SEAL", category: "SEALS & GASKETS", supplier: "Custom seals", contact: "JOHN", po: "PO18602", datePo: "14-Sep-26", recd: "YES", dateRecd: "14-Sep-26", followUp: "RIF", status: "RECEIVED", nextcloudUrl: "", attachments: [] },
+        { id: 202, item: "PINION SM FELT SEAL", category: "SEALS & GASKETS", supplier: "Custom seals", contact: "JOHN", po: "PO18602", datePo: "14-Sep-26", recd: "YES", dateRecd: "14-Sep-26", followUp: "RIF", status: "RECEIVED", nextcloudUrl: "", attachments: [] }
+      ]
+    }
+  ];
+
+  const streamData = {
+    status: [{ id: 1, job: "AC2969", msg: "QC HOLD: Cone UT scan failed long seam weld.", sender: "QC Inspector", time: "08:30 AM", status: "PENDING" }],
+    buying: [], stores: [], client: []
+  };
+
+  let currentMode = "internal";
+  let activeStream = "status";
+  let activeItemForAttachment = null;
+  let activeQcStage = null;
+  let currentVerdict = "REJECT";
+
+  function switchViewSection(section) {
+    ["buyout", "gantt", "suppliers"].forEach(s => {
+      document.getElementById(`section-${s}`).classList.add("hidden");
+      document.getElementById(`nav-${s}`).className = "px-3 py-1.5 bg-slate-800 text-slate-300 font-bold text-xs rounded-lg hover:bg-slate-700 transition-all";
+    });
+
+    document.getElementById(`section-${section}`).classList.remove("hidden");
+    document.getElementById(`nav-${section}`).className = "px-3 py-1.5 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg transition-all shadow";
+
+    if (section === "buyout") applyBuyoutFilters();
+    else if (section === "gantt") renderGanttSection();
+    else if (section === "suppliers") renderSupplierDirectory();
+  }
+
+  function changeViewMode(mode) {
+    currentMode = mode;
+    applyBuyoutFilters();
+    if (!document.getElementById("section-gantt").classList.contains("hidden")) renderGanttSection();
+  }
+
+  // Render Buyout Cards
+  function renderBuyoutCards(filteredData = masterDatabase) {
+    const container = document.getElementById("buyoutCardsContainer");
+    container.innerHTML = "";
+
+    filteredData.forEach(proj => {
+      let rowsHtml = "";
+      const isProject100Recd = proj.items.length > 0 && proj.items.every(i => i.status === "RECEIVED");
+
+      proj.items.forEach(row => {
+        let rowBg = "bg-slate-900 text-slate-100 border-b border-slate-800";
+        if (row.status === "QUOTE") rowBg = "bg-amber-400/95 text-slate-950 font-bold border-b border-slate-900/40";
+        else if (row.status === "ISSUED") rowBg = "bg-orange-400/95 text-slate-950 font-bold border-b border-slate-900/40";
+        else if (row.status === "RECEIVED") rowBg = "bg-emerald-500/95 text-slate-950 font-bold border-b border-slate-900/40";
+
+        const attachmentCount = row.attachments ? row.attachments.length : 0;
+        const dropdownOptions = generateSupplierOptions(row.category, row.supplier);
+
+        rowsHtml += `
+          <tr class="${rowBg} transition-all">
+            <td class="p-3 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <button onclick="openAttachmentModal(${row.id})" class="px-2 py-1 bg-black/20 hover:bg-black/40 rounded font-mono text-[11px]" title="Attach Document">
+                  📎 <span class="font-bold">${attachmentCount > 0 ? attachmentCount : ''}</span>
+                </button>
+                ${row.nextcloudUrl ? `<a href="${row.nextcloudUrl}" target="_blank" class="underline text-[11px] font-mono hover:text-white">VIEW PO</a>` : row.po ? `<span class="text-[11px] font-mono">${row.po}</span>` : '-'}
+              </div>
+            </td>
+            <td class="p-3 font-bold">${row.item}</td>
+            <td class="p-3">
+              <select onchange="updateLineSupplier(${row.id}, this.value)" class="bg-black/30 text-xs font-bold rounded px-2 py-1 outline-none border border-black/20">
+                ${dropdownOptions}
+              </select>
+            </td>
+            <td class="p-3">${row.contact || '-'}</td>
+            <td class="p-3 font-mono font-bold">${row.po || '-'}</td>
+            <td class="p-3 font-mono">${row.datePo || '-'}</td>
+            <td class="p-3 text-center font-bold text-xs">${row.recd || (row.status === "RECEIVED" ? 'YES' : '-')}</td>
+            <td class="p-3 font-mono">${row.dateRecd || '-'}</td>
+            <td class="p-3 font-mono">${row.followUp || '-'}</td>
+            <td class="p-3 text-right">
+              ${row.status !== "RECEIVED" ? `
+                <button onclick="markLineReceived(${row.id})" class="px-2.5 py-1 bg-slate-950 text-white hover:bg-black font-bold text-[10px] rounded shadow">
+                  Mark Recd
+                </button>
+              ` : '✓ Recd'}
+            </td>
+          </tr>
+        `;
+      });
+
+      container.innerHTML += `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+          <div class="bg-slate-800/90 p-4 border-b border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PROJECT NAME</span>
+                ${isProject100Recd ? `<span class="bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">100% PURCHASE COMPLETED</span>` : ''}
+              </div>
+              <h2 class="text-base font-black text-amber-400 font-mono">${proj.projectName}</h2>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">BUYER ASSIGNED</span>
+                <span class="text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 px-2.5 py-0.5 rounded font-mono">${proj.buyer}</span>
+              </div>
+              <div>
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">LINKED AC UNITS</span>
+                <span class="text-xs font-bold text-amber-300 font-mono bg-amber-950/60 px-2.5 py-1 rounded border border-amber-800/60">${proj.acLabels}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800 font-mono text-[11px]">
+                  <th class="p-3 font-semibold">PO LINK & ATTACH</th>
+                  <th class="p-3 font-semibold">PRIMARY COLUMN / DESCRIPTION</th>
+                  <th class="p-3 font-semibold">RECOMMENDED SUPPLIER</th>
+                  <th class="p-3 font-semibold">CONTACT</th>
+                  <th class="p-3 font-semibold">PO NR</th>
+                  <th class="p-3 font-semibold">DATE OF PO</th>
+                  <th class="p-3 font-semibold text-center">RECEIVED</th>
+                  <th class="p-3 font-semibold">DATE RECD</th>
+                  <th class="p-3 font-semibold">FOLLOWED UP</th>
+                  <th class="p-3 font-semibold text-right">ACTION</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 font-medium">${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function generateSupplierOptions(category, selectedSupplier) {
+    const matched = masterSupplierDirectory.filter(s => s.category.toUpperCase() === (category || '').toUpperCase());
+    const others = masterSupplierDirectory.filter(s => s.category.toUpperCase() !== (category || '').toUpperCase());
+
+    let html = `<option value="">-- Select Supplier --</option>`;
+    if (matched.length > 0) {
+      html += `<optgroup label="⭐ RECOMMENDED (${category || 'MATCHING'})">`;
+      matched.forEach(s => {
+        html += `<option value="${s.name}" ${s.name.toUpperCase() === (selectedSupplier || '').toUpperCase() ? 'selected' : ''}>${s.name} [${s.status}]</option>`;
+      });
+      html += `</optgroup>`;
+    }
+
+    html += `<optgroup label="OTHER DIRECTORY SUPPLIERS">`;
+    others.forEach(s => {
+      html += `<option value="${s.name}" ${s.name.toUpperCase() === (selectedSupplier || '').toUpperCase() ? 'selected' : ''}>${s.name} [${s.status}]</option>`;
+    });
+    html += `</optgroup>`;
+    return html;
+  }
+
+  function updateLineSupplier(lineId, supplierName) {
+    const supp = masterSupplierDirectory.find(s => s.name.toUpperCase() === supplierName.toUpperCase());
+    masterDatabase.forEach(p => {
+      p.items.forEach(i => {
+        if (i.id === lineId) {
+          i.supplier = supplierName;
+          i.contact = supp ? supp.pocName : "";
+        }
+      });
+    });
+    applyBuyoutFilters();
+  }
+
+  function applyBuyoutFilters() {
+    const search = document.getElementById("searchInput").value.toLowerCase().trim();
+    const status = document.getElementById("statusFilter").value;
+
+    let filtered = JSON.parse(JSON.stringify(masterDatabase));
+
+    if (status === "COMPLETED_PROJECTS") {
+      filtered = filtered.filter(p => p.items.length > 0 && p.items.every(i => i.status === "RECEIVED"));
+    }
+
+    filtered.forEach(p => {
+      p.items = p.items.filter(i => {
+        const matchStatus = (status === "ALL" || status === "COMPLETED_PROJECTS") || i.status === status;
+        const matchSearch = !search || (
+          p.projectName.toLowerCase().includes(search) ||
+          p.acLabels.toLowerCase().includes(search) ||
+          i.item.toLowerCase().includes(search) ||
+          i.supplier.toLowerCase().includes(search) ||
+          (i.po && i.po.toLowerCase().includes(search))
+        );
+        return matchStatus && matchSearch;
+      });
+    });
+
+    filtered = filtered.filter(p => p.items.length > 0);
+    renderBuyoutCards(filtered);
+  }
+
+  function markLineReceived(lineId) {
+    masterDatabase.forEach(p => {
+      p.items.forEach(i => {
+        if (i.id === lineId) {
+          i.status = "RECEIVED";
+          i.recd = "YES";
+          i.dateRecd = new Date().toLocaleDateString('en-GB');
+          i.followUp = "RIF";
+        }
+      });
+    });
+    applyBuyoutFilters();
+  }
+
+  // Gantt Renderer
+  function renderGanttSection() {
+    const container = document.getElementById("ganttStageRows");
+    container.innerHTML = "";
+
+    const stages = [
+      { id: "S1", name: "Plate Laser Cutting", supplier: "Fast Flame", status: "COMPLETED", durationDays: 5, currentDay: 5 },
+      { id: "S2", name: "Cone Cutting, Rolling, Welding & UT", supplier: "Bekker Steel", status: "QC_HOLD", durationDays: 10, currentDay: 11 },
+      { id: "S3", name: "Feed Chute Assembly", supplier: "ALLCON", status: "PENDING", durationDays: 7, currentDay: 0 }
+    ];
+
+    stages.forEach(stage => {
+      let ragColor = "bg-emerald-500/20 text-emerald-400 border-emerald-500/40";
+      let ragText = "🟢 ON TRACK";
+
+      if (stage.status === "QC_HOLD") {
+        ragColor = "bg-red-500/20 text-red-400 border-red-500/40";
+        ragText = "🔴 QC HOLD / REJECTED";
+      } else if (stage.status === "COMPLETED") ragText = "✓ COMPLETED";
+
+      container.innerHTML += `
+        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-xl space-y-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="font-bold text-sm text-slate-100">${stage.name}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-bold border ml-2 ${ragColor}">${ragText}</span>
+              <p class="text-xs text-slate-400 mt-0.5">Supplier: <strong class="text-amber-400">${stage.supplier}</strong></p>
+            </div>
+            ${currentMode === "internal" ? `
+              <button onclick="openQcModal('${stage.name}', '${stage.supplier}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg shadow">
+                🔍 QC Inspection
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    renderStreamFeed();
+  }
+
+  function switchStreamTab(tab) {
+    activeStream = tab;
+    renderStreamFeed();
+  }
+
+  function renderStreamFeed() {
+    const container = document.getElementById("feedStreamContainer");
+    container.innerHTML = "";
+    (streamData[activeStream] || []).forEach(i => {
+      container.innerHTML += `
+        <div class="bg-slate-800 border border-slate-700 p-3 rounded-xl space-y-1 text-xs">
+          <div class="flex justify-between font-mono">
+            <span class="font-bold text-amber-400">${i.job}</span>
+            <span class="text-slate-400 text-[10px]">${i.time}</span>
+          </div>
+          <p class="text-slate-100">${i.msg}</p>
+        </div>
+      `;
+    });
+  }
+
+  // Supplier Directory Renderer
+  function renderSupplierDirectory() {
+    const container = document.getElementById("supplierDirectoryContainer");
+    const searchVal = document.getElementById("supplierSearchInput").value.toLowerCase().trim();
+    const statusVal = document.getElementById("supplierStatusFilter").value;
+
+    container.innerHTML = "";
+
+    const filtered = masterSupplierDirectory.filter(s => {
+      const matchStatus = statusVal === "ALL" || s.status.toUpperCase() === statusVal.toUpperCase();
+      const matchSearch = !searchVal || (
+        s.name.toLowerCase().includes(searchVal) ||
+        s.category.toLowerCase().includes(searchVal) ||
+        s.pocName.toLowerCase().includes(searchVal)
+      );
+      return matchStatus && matchSearch;
+    });
+
+    const grouped = {};
+    filtered.forEach(s => {
+      const letter = s.name.charAt(0).toUpperCase();
+      if (!grouped[letter]) grouped[letter] = [];
+      grouped[letter].push(s);
+    });
+
+    Object.keys(grouped).sort().forEach(letter => {
+      let groupCardsHtml = "";
+      grouped[letter].forEach(s => {
+        groupCardsHtml += `
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-2 shadow-xl">
+            <span class="text-[10px] px-2 py-0.5 rounded font-black uppercase tracking-wider bg-blue-600 text-white">${s.status}</span>
+            <h3 class="text-base font-bold text-slate-100">${s.name}</h3>
+            <span class="text-xs font-bold text-red-400 font-mono block">${s.category}</span>
+            <div class="bg-slate-950 p-3 rounded-xl text-xs space-y-1">
+              <p><span class="text-slate-400 font-bold">POC:</span> ${s.pocName}</p>
+              <p><span class="text-slate-400 font-bold">Email:</span> <span class="text-red-300 font-mono">${s.pocEmail}</span></p>
+              <p><span class="text-slate-400 font-bold">Phone:</span> <span class="text-red-400 font-mono font-bold">${s.pocPhone}</span></p>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML += `
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+            <span class="bg-red-600 text-white font-black w-6 h-6 rounded-full flex items-center justify-center text-xs">${letter}</span>
+            <span class="text-xs font-bold text-slate-400">${grouped[letter].length} supplier(s)</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">${groupCardsHtml}</div>
+        </div>
+      `;
+    });
+  }
+
+  // Modals & Attachments
+  function openAttachmentModal(lineId) {
+    masterDatabase.forEach(p => p.items.forEach(i => { if (i.id === lineId) activeItemForAttachment = i; }));
+    if (!activeItemForAttachment) return;
+    renderAttachedFilesList();
+    document.getElementById("attachmentModal").classList.remove("hidden");
+  }
+
+  function closeAttachmentModal() { document.getElementById("attachmentModal").classList.add("hidden"); }
+
+  function renderAttachedFilesList() {
+    const container = document.getElementById("attachedFilesList");
+    container.innerHTML = "";
+    if (!activeItemForAttachment.attachments || activeItemForAttachment.attachments.length === 0) {
+      container.innerHTML = `<p class="text-xs text-slate-500 italic">No files attached yet.</p>`;
+      return;
+    }
+    activeItemForAttachment.attachments.forEach((file, idx) => {
+      container.innerHTML += `
+        <div class="bg-slate-800 p-2 rounded-lg flex justify-between items-center text-xs">
+          <span class="text-amber-400 font-bold">📄 ${file.name}</span>
+          <button onclick="removeAttachment(${idx})" class="text-slate-400 hover:text-red-400 text-xs font-bold">✕</button>
+        </div>
+      `;
+    });
+  }
+
+  function removeAttachment(idx) {
+    if (activeItemForAttachment) {
+      activeItemForAttachment.attachments.splice(idx, 1);
+      renderAttachedFilesList();
+      applyBuyoutFilters();
+    }
+  }
+
+  function handleFileInput(e) { if (e.target.files[0]) addFileToActiveItem(e.target.files[0]); }
+  function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add("drag-over"); }
+  function handleDragLeave(e) { e.currentTarget.classList.remove("drag-over"); }
+  function handleFileDrop(e) { e.preventDefault(); e.currentTarget.classList.remove("drag-over"); if (e.dataTransfer.files[0]) addFileToActiveItem(e.dataTransfer.files[0]); }
+
+  function addFileToActiveItem(file) {
+    if (!activeItemForAttachment) return;
+    if (!activeItemForAttachment.attachments) activeItemForAttachment.attachments = [];
+    activeItemForAttachment.attachments.push({ name: file.name, url: URL.createObjectURL(file) });
+    renderAttachedFilesList();
+    applyBuyoutFilters();
+  }
+
+  // QC Modal Functions
+  function openQcModal(stageName, supplier) {
+    activeQcStage = { name: stageName, supplier: supplier };
+    document.getElementById("qcStageTitle").innerText = `Stage: ${stageName}`;
+    document.getElementById("qcSupplierBanner").innerHTML = `Supplier: <strong class="text-amber-400">${supplier}</strong>`;
+    document.getElementById("qcModal").classList.remove("hidden");
+  }
+
+  function closeQcModal() { document.getElementById("qcModal").classList.add("hidden"); }
+  function setQcVerdict(v) { currentVerdict = v; }
+
+  function submitQcInspection() {
+    const text = document.getElementById("qcDefectText").value || "UT Seam weld scan failed.";
+    if (currentVerdict === "REJECT") openNcrModal(activeQcStage, text);
+    closeQcModal();
+  }
+
+  function openNcrModal(stage, defect) {
+    document.getElementById("ncrPrintArea").innerHTML = `
+      <h1 class="text-lg font-black text-red-700">SYNCRA NON-CONFORMANCE REPORT (NCR)</h1>
+      <p><strong>Supplier:</strong> ${stage.supplier}</p>
+      <p><strong>Component Stage:</strong> ${stage.name}</p>
+      <p class="bg-red-50 p-2 rounded border border-red-200 mt-2"><strong>Defect:</strong> ${defect}</p>
+    `;
+    document.getElementById("ncrModal").classList.remove("hidden");
+  }
+
+  function closeNcrModal() { document.getElementById("ncrModal").classList.add("hidden"); }
+
+  // Batch PO Modal
+  function openBatchPoModal() { document.getElementById("batchPoModal").classList.remove("hidden"); }
+  function closeBatchPoModal() { document.getElementById("batchPoModal").classList.add("hidden"); }
+
+  function saveBatchPoAssignment() {
+    const po = document.getElementById("batchPoInput").value;
+    const supp = document.getElementById("batchSupplierSelect").value;
+    masterDatabase[0].items.forEach(i => {
+      i.po = po;
+      i.supplier = supp;
+      i.status = "ISSUED";
+    });
+    alert(`Batch PO ${po} assigned!`);
+    closeBatchPoModal();
+    applyBuyoutFilters();
+  }
+
+  function openPmReportModal() { document.getElementById("pmReportModal").classList.remove("hidden"); }
+  function closePmReportModal() { document.getElementById("pmReportModal").classList.add("hidden"); }
+
+  // CSV Importer
+  function handleCsvUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      alert("SYNCRA: CSV sheet parsed successfully!");
+      applyBuyoutFilters();
+    };
+    reader.readAsText(file);
+  }
+
+  // Initial Boot
+  applyBuyoutFilters();
+</script>
+</body>
+</html>
+
+```
